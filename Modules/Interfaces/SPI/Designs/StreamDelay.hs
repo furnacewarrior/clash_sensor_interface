@@ -3,7 +3,7 @@ import Clash.Explicit.Prelude
 import ClashAddon
 import ConnectorsStd
  
-data CtrlState = Init | ReadWrite | ReadWrite# | WriteData | WriteData# | Hold | Hold2 | Hold# | ReadData | HoldPreEnd
+data CtrlState = Init | ReadWrite | ReadWrite# | WriteOutput | WriteOutput# | Hold | Hold2 | Hold# | LoadInput
 
 -- # means the busy signal is reset here
 -- number means same state but has different name for state machine
@@ -32,48 +32,48 @@ ctrl (dataSize, delay) state input = state'
       _ -> stateM_4
 
     stateM_1 = case stateL of
-      Init -> ReadData
+      Init -> LoadInput
       ReadWrite -> case counter < (dataSize - 2) of
                   True -> ReadWrite
                   False -> ReadWrite#
-      ReadWrite# -> WriteData
-      WriteData -> ReadData  
-      ReadData -> ReadWrite
+      ReadWrite# -> WriteOutput
+      WriteOutput -> LoadInput  
+      LoadInput -> ReadWrite
       _ -> Init
  
     stateM_2 = case stateL of
-      Init -> ReadData
+      Init -> LoadInput
       ReadWrite -> case counter < (dataSize - 1) of
                    True -> ReadWrite
-                   False -> WriteData#
-      WriteData# -> Hold
-      Hold -> ReadData  
-      ReadData -> ReadWrite
+                   False -> WriteOutput#
+      WriteOutput# -> Hold
+      Hold -> LoadInput  
+      LoadInput -> ReadWrite
       _ -> Init
 
     stateM_3 = case stateL of
-      Init -> ReadData
+      Init -> LoadInput
       ReadWrite -> case counter < (dataSize - 1) of
                    True -> ReadWrite
-                   False -> WriteData
-      WriteData -> Hold#
+                   False -> WriteOutput
+      WriteOutput -> Hold#
       Hold# -> Hold
-      Hold -> ReadData
-      ReadData -> ReadWrite
+      Hold -> LoadInput
+      LoadInput -> ReadWrite
       _ -> Init
 
     stateM_4 = case stateL of
-      Init -> ReadData
+      Init -> LoadInput
       ReadWrite -> case counter < (dataSize - 1) of
                    True -> ReadWrite
-                   False -> WriteData
-      WriteData -> Hold
+                   False -> WriteOutput
+      WriteOutput -> Hold
       Hold -> case (counterDelay == (delay - 3)) of
         True -> Hold#
         False -> Hold
       Hold# -> Hold2
-	  Hold2 -> ReadData
-      ReadData -> ReadWrite
+      Hold2 -> LoadInput
+      LoadInput -> ReadWrite
       _ -> Init
 
     state' = case (stateNext) of
@@ -81,11 +81,12 @@ ctrl (dataSize, delay) state input = state'
       Init        -> (          0,                0, shiftBitInOut buffer miso, high,                dataOut,  low,  low, high, stateNext)
       ReadWrite   -> (counter + 1,                0, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, stateNext)
       ReadWrite#  -> (          0,                0, shiftBitInOut buffer miso,  low,                dataOut,  low, high,  low, stateNext)
-      WriteData   -> (          0,                0, shiftBitInOut buffer miso,  low, shiftBitIn buffer miso, high,  low, high, stateNext)
-      WriteData#  -> (          0,                0, shiftBitInOut buffer miso,  low, shiftBitIn buffer miso, high,  low,  low, stateNext)
-      Hold, Hold2 -> (          0, counterDelay + 1, shiftBitInOut buffer miso,  low,                dataOut,  low,  low, high, stateNext)
+      WriteOutput -> (          0,                0, shiftBitInOut buffer miso,  low, shiftBitIn buffer miso, high,  low, high, stateNext)
+      WriteOutput#-> (          0,                0, shiftBitInOut buffer miso,  low, shiftBitIn buffer miso, high,  low,  low, stateNext)
+      Hold        -> (          0, counterDelay + 1, shiftBitInOut buffer miso,  low,                dataOut,  low,  low, high, stateNext)
+      Hold2       -> (          0, counterDelay + 1, shiftBitInOut buffer miso,  low,                dataOut,  low,  low, high, stateNext)
       Hold#       -> (          0,                0, shiftBitInOut buffer miso,  low,                dataOut,  low,  low,  low, stateNext)
-      ReadData    -> (          0,                0, shiftBitInOut dataIn miso,  low,                dataOut,  low, high, high, stateNext)
+      LoadInput   -> (          0,                0, shiftBitInOut dataIn miso,  low,                dataOut,  low, high, high, stateNext)
 
 ctrlOut state = output
   where

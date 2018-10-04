@@ -3,7 +3,7 @@ import Clash.Explicit.Prelude
 import ClashAddon
 import ConnectorsStd
  
-data CtrlState = Init | ReadWrite | ReadWrite# | ReadWrite2 | Restart
+data CtrlState = Init | ReadWrite | ReadWrite# | ReadWrite2 | RdInWrOut
 
 version = "1.0"
 ctrl :: (KnownNat a, c ~ (Unsigned 16, (BitVector a, Bit), Bit, BitVector a, Bit, Bit, Bit, CtrlState))
@@ -24,13 +24,13 @@ ctrl (dataSize) state input = state'
     (counter, (buffer, mosi), cs, dataOut, nextOutput, clkOut, busyOut, stateL) = state
 
     stateNext = case stateL of
-      Init -> Restart
+      Init -> RdInWrOut
       ReadWrite -> case counter < (dataSize - 3) of
         True -> ReadWrite
         False -> ReadWrite#
       ReadWrite# -> ReadWrite2
-      ReadWrite2 -> Restart
-      Restart -> ReadWrite
+      ReadWrite2 -> RdInWrOut
+      RdInWrOut -> ReadWrite
   
 
     state' = case (stateNext) of
@@ -39,7 +39,7 @@ ctrl (dataSize) state input = state'
       ReadWrite  -> (counter + 1, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, stateNext)
       ReadWrite# -> (          0, shiftBitInOut buffer miso,  low,                dataOut,  low, high,  low, stateNext)
       ReadWrite2 -> (          0, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, stateNext)
-      Restart    -> (          0, shiftBitInOut dataIn miso,  low, shiftBitIn buffer miso, high, high, high, stateNext)
+      RdInWrOut  -> (          0, shiftBitInOut dataIn miso,  low, shiftBitIn buffer miso, high, high, high, stateNext)
 
 ctrlOut state = output
   where

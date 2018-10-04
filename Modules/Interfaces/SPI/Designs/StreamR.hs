@@ -3,7 +3,7 @@ import Clash.Explicit.Prelude
 import ClashAddon
 import ConnectorsStd
  
-data CtrlState = LoadInput | Process | WriteOutput | Restart
+data CtrlState = LoadInput | ReadWrite | WriteOutput | Restart
 
 version = "1.0"
 
@@ -25,9 +25,9 @@ ctrl (dataSize) state input = state'
     (counter, (buffer, mosi), cs, dataOut, nextOutput, clkOut, busyOut, stateL) = state
     
     stateNext = case stateL of
-      LoadInput -> Process
-      Process -> case counter < (dataSize - 1) of
-        True -> Process
+      LoadInput -> ReadWrite
+      ReadWrite -> case counter < (dataSize - 1) of
+        True -> ReadWrite
         False -> WriteOutput
       WriteOutput -> Restart
       Restart -> LoadInput
@@ -35,7 +35,7 @@ ctrl (dataSize) state input = state'
     state' = case (stateNext) of
 --                   (    counter,            (buffer, mosi),   cs,                dataOut,   NO, clkO,busyO,   stateL)
       LoadInput   -> (          0, shiftBitInOut dataIn miso,  low,                dataOut,  low, high, high, stateNext)
-      Process     -> (counter + 1, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, stateNext)
+      ReadWrite     -> (counter + 1, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, stateNext)
       WriteOutput -> (          0, shiftBitInOut buffer miso,  low, shiftBitIn buffer miso, high, high, low, stateNext)
       Restart     -> (          0, shiftBitInOut buffer miso, high,                dataOut,  low,  low, high, stateNext)
 
