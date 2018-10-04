@@ -1,0 +1,2 @@
+Manifest {manifestHash = (-5565384378145339594,Just 473633664332284355), portInNames = ["clk","rst","sigIn"], portInTypes = ["","","[9:0]"], portOutNames = ["sigOut"], portOutTypes = ["[7:0]"], componentNames = ["test"]}
+

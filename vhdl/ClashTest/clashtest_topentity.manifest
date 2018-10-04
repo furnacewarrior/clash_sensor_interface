@@ -1,0 +1,2 @@
+Manifest {manifestHash = (-8253742499944610223,Nothing), portInNames = ["clk","rst","a","b"], portInTypes = ["std_logic","std_logic","unsigned(7 downto 0)","unsigned(7 downto 0)"], portOutNames = ["state"], portOutTypes = ["unsigned(7 downto 0)"], componentNames = ["clashtest_topentity"]}
+

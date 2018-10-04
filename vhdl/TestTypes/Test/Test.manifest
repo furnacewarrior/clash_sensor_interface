@@ -1,0 +1,2 @@
+Manifest {manifestHash = (-6259885487997915091,Just (-8583402276094266837)), portInNames = ["clk","rst","sigIn"], portInTypes = ["std_logic","std_logic","test.test_types.connstd"], portOutNames = ["sigOut"], portOutTypes = ["std_logic_vector(7 downto 0)"], componentNames = ["test"]}
+

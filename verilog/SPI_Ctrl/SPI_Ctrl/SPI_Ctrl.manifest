@@ -1,0 +1,2 @@
+Manifest {manifestHash = (4216828856512691446,Just 3239949500776253637), portInNames = ["clk","rst","driverOut","sensorOut"], portInTypes = ["","","[9:0]",""], portOutNames = ["sensorIn","driverIn","clkOut"], portOutTypes = ["[1:0]","[9:0]","[1:0]"], componentNames = ["SPI_Ctrl_spiCtrl_sspiCtrl","SPI_Ctrl_shiftBitInOut","SPI_Ctrl"]}
+

@@ -1,0 +1,2 @@
+Manifest {manifestHash = (3179314941263788614,Just (-1016217503804528001)), portInNames = ["clkA","rstA","clkB","rstB","miso"], portInTypes = ["","","","",""], portOutNames = ["result_0","result_1","result_2","result_3"], portOutTypes = ["[7:0]","","","[1:0]"], componentNames = ["SyncSafe_syncSafe_ssync_safe","LightSensor_Ctrl_spi_lightSensor","LightSensor_I_interface_sinterface","LightSensor_spiCtrl","SyncSafe_syncSafe_ssync_safe_0","LightSensor_spi_Ctrl","LightSensor_topEntity","LightSensor_shiftBitInOut","LightSensor_synchronizer"]}
+

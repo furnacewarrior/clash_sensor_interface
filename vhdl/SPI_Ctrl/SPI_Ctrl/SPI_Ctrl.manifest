@@ -1,0 +1,2 @@
+Manifest {manifestHash = (-3686865077465292969,Just 4034037758741245897), portInNames = ["clk","rst","driverOut","sensorOut"], portInTypes = ["std_logic","std_logic","SPI_Ctrl.spi_ctrl_types.connstd","std_logic"], portOutNames = ["sensorIn","driverIn","clkOut"], portOutTypes = ["SPI_Ctrl.spi_ctrl_types.tup2_2","SPI_Ctrl.spi_ctrl_types.connstd","spi_ctrl_types.gatedclock"], componentNames = ["spi_ctrl_spictrl_sspictrl","SPI_Ctrl","spi_ctrl_shiftbitinout"]}
+
