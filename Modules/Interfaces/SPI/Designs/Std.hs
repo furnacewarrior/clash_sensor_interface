@@ -3,7 +3,7 @@ import Clash.Explicit.Prelude
 import ClashAddon
 import ConnectorsStd
 
-data CtrlState = ReadWrite | WriteLast | WriteRestart | WriteHold | WaitBusy | WaitFinished | Restart
+data CtrlState = ReadWrite | ReadWrite2 | ReadWrite# | WriteRestart | WriteHold | WaitBusy | WaitFinished | Restart
 
 version = "1.0"
 ctrl :: (KnownNat a, c ~ (Unsigned 16, (BitVector a, Bit), Bit, BitVector a, Bit, Bit, Bit, CtrlState)) 
@@ -24,10 +24,11 @@ ctrl (dataSize) state input = state'
     (counter, (buffer, mosi), cs, dataOut, nextOutput, clkOut, busyOut, stateL) = state
     
     newState = case stateL of
-      ReadWrite -> case counter < (dataSize - 2) of
+      ReadWrite -> case counter < (dataSize - 3) of
         True -> ReadWrite
-        False -> WriteLast
-      WriteLast -> case (busy == low, finished == high) of
+        False -> ReadWrite#
+      ReadWrite# -> ReadWrite2
+      ReadWrite2 -> case (busy == low, finished == high) of
         (True, True) -> WriteRestart
         (True, False) -> WriteHold
         (False, True) -> WaitBusy
@@ -42,16 +43,18 @@ ctrl (dataSize) state input = state'
       WaitFinished -> case (finished == high) of
         True -> Restart
         False -> WaitFinished
+      Restart -> ReadWrite
 
     state' = case (newState) of
 --                    (    counter,            (buffer, mosi),   cs,                dataOut,   NO, clkO,busyO,   stateL)
       ReadWrite    -> (counter + 1, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, newState)
-      WriteLast    -> (          0, shiftBitInOut buffer miso,  low,                dataOut,  low, high,  low, newState)
+      ReadWrite#   -> (          0, shiftBitInOut buffer miso,  low,                dataOut,  low, high,  low, newState)
+      ReadWrite2   -> (          0, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, newState)
       Restart      -> (          0, shiftBitInOut dataIn miso,  low,                dataOut,  low, high, high, newState)
       WriteRestart -> (          0, shiftBitInOut dataIn miso,  low, shiftBitIn buffer miso, high, high, high, newState)
-      WriteHold    -> (          0,            (buffer, mosi),  low, shiftBitIn buffer miso, high,  low,  low, newState)
+      WriteHold    -> (          0,            (buffer, mosi),  low, shiftBitIn buffer miso, high,  low, high, newState)
       WaitBusy     -> (          0,            (buffer, mosi),  low,                dataOut,  low,  low, high, newState)
-      WaitFinished -> (          0,            (buffer, mosi), high,                dataOut,  low,  low,  low, newState)
+      WaitFinished -> (          0,            (buffer, mosi), high,                dataOut,  low,  low, high, newState)
 
 ctrlOut state = output
   where
