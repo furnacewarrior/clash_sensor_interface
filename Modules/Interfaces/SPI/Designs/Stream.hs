@@ -3,7 +3,7 @@ import Clash.Explicit.Prelude
 import ClashAddon
 import ConnectorsStd
  
-data CtrlState = Init | Process | SignalDriver | WriteLast | Restart
+data CtrlState = Init | ReadWrite | ReadWrite# | ReadWrite2 | Restart
 
 version = "1.0"
 ctrl :: (KnownNat a, c ~ (Unsigned 16, (BitVector a, Bit), Bit, BitVector a, Bit, Bit, Bit, CtrlState))
@@ -25,21 +25,21 @@ ctrl (dataSize) state input = state'
 
     stateNext = case stateL of
       Init -> Restart
-      Process -> case counter < (dataSize - 3) of
-        True -> Process
-        False -> SignalDriver
-      SignalDriver -> WriteLast      -- Busy low to indicate new write
-      WriteLast -> Restart
-      Restart -> Process
+      ReadWrite -> case counter < (dataSize - 3) of
+        True -> ReadWrite
+        False -> ReadWrite#
+      ReadWrite# -> ReadWrite2
+      ReadWrite2 -> Restart
+      Restart -> ReadWrite
   
 
     state' = case (stateNext) of
---                    (    counter,            (buffer, mosi),   cs,                dataOut,   NO, clkO,busyO,   stateL)
-      Init         -> (          0, shiftBitInOut buffer miso, high,                dataOut,  low,  low,  low, stateNext)
-      Process      -> (counter + 1, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, stateNext)
-      SignalDriver -> (          0, shiftBitInOut buffer miso,  low,                dataOut,  low, high,  low, stateNext)
-      WriteLast    -> (          0, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, stateNext)
-      Restart      -> (          0, shiftBitInOut dataIn miso,  low, shiftBitIn buffer miso, high, high, high, stateNext)
+--                  (    counter,            (buffer, mosi),   cs,                dataOut,   NO, clkO,busyO,    stateL)
+      Init       -> (          0, shiftBitInOut buffer miso, high,                dataOut,  low,  low,  low, stateNext)
+      ReadWrite  -> (counter + 1, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, stateNext)
+      ReadWrite# -> (          0, shiftBitInOut buffer miso,  low,                dataOut,  low, high,  low, stateNext)
+      ReadWrite2 -> (          0, shiftBitInOut buffer miso,  low,                dataOut,  low, high, high, stateNext)
+      Restart    -> (          0, shiftBitInOut dataIn miso,  low, shiftBitIn buffer miso, high, high, high, stateNext)
 
 ctrlOut state = output
   where
